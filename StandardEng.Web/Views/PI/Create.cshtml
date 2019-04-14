@@ -1,0 +1,583 @@
+﻿
+@model tblPerformaInvoice
+@{
+    ViewBag.Title = "Manage Performa Invoice";
+}
+
+<div class="page-header page-header-light">
+    <div class="page-header-content header-elements-md-inline">
+        <div class="page-title d-flex">
+            <h4><i class="icon-arrow-left52 mr-2"></i> <span class="font-weight-semibold">Home</span> - Performa Invoice</h4>
+            <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
+        </div>
+    </div>
+    <div class="breadcrumb-line breadcrumb-line-light header-elements-md-inline">
+        <div class="d-flex">
+            <div class="breadcrumb">
+                <a href="@Url.Action("Index","Home")" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home</a>
+                <span class="breadcrumb-item active">Manage Performa Invoice</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("SaveModelData", "PI", FormMethod.Post, new { @class = "form form-horizontal", @id = "validation-form" }))
+            {
+                <div class="card">
+                    <div class="card-header header-elements-inline">
+                        <h5 class="card-title">
+                            @if (Model.PerformaInvoiceId > 0)
+                            {
+                                @Html.Label("Quotation Number :  ")
+                                @Html.DisplayFor(m => m.QuotationNo)
+                            }
+                        </h5>
+
+                        <div class="col-lg-7 text-right">
+                            @if (Model.PerformaInvoiceId > 0)
+                            {
+                                <input type="submit" class="btn btn-outline-primary legitRipple" value="Save" name="create" tabindex="15" />
+                            }
+                            else
+                            {
+                                <input type="submit" class="btn btn-outline-primary legitRipple" value="Save & Continue" name="create" tabindex="15" />
+                            }
+                            <a href="@Url.Action("Index", "PI")" class="btn btn-outline-primary legitRipple" tabindex="18">Back</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        @Html.HiddenFor(m => m.PerformaInvoiceId)
+                        @Html.HiddenFor(m => m.MPQuotationId)
+                        @Html.HiddenFor(m => m.CreatedBy)
+                        @Html.HiddenFor(m => m.CreatedDate)
+                        @Html.HiddenFor(m => m.QuotationNo)
+                        @Html.HiddenFor(m => m.SequenceNo)
+
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.CustomerId, new { @class = "col-sm-6 col-lg-4 control-label" })
+                                    <div class="col-sm-6 col-lg-9 controls">
+                                        @(Html.Kendo().ComboBoxFor(m => m.CustomerId)
+                                                                                      .Value(Model.CustomerId == 0 ? string.Empty : Model.CustomerId.ToString())
+                                                                                      .Placeholder("--Select Customer --")
+                                                                                      .DataTextField("CustomerName")
+                                                                                      .DataValueField("CustomerId")
+                                                                                      .HtmlAttributes(new { @tabindex = 1, @readonly = "readonly" })
+                                                                                      .DataSource(source =>
+                                                                                      {
+                                                                                          source.Read(read =>
+                                                                                          {
+                                                                                              read.Action("GetCustomerList", "Common");
+                                                                                          });
+                                                                                      }))
+                                        @*.Events(e => e.Change("onChangeCustomer"))*@
+
+                                        @Html.ValidationMessageFor(m => m.CustomerId)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.CustomerContactPId, new { @class = "col-sm-6 col-lg-4 control-label" })
+                                    <div class="col-sm-6 col-lg-9 controls">
+                                        @(Html.Kendo().ComboBoxFor(m => m.CustomerContactPId)
+                                                                                      .Value(Model.CustomerContactPId == 0 ? string.Empty : Model.CustomerContactPId.ToString())
+                                                                                      .Placeholder("--Select Contact Person --")
+                                                                                      .DataTextField("ContactPersonName")
+                                                                                      .DataValueField("ContactPersonId")
+                                                                                      .Enable(false)
+                                                                                      .AutoBind(false)
+                                                                                      .CascadeFrom("CustomerId")
+                                                                                      .HtmlAttributes(new { @tabindex = 3, @readonly = "readonly" })
+                                                                                      .DataSource(source =>
+                                                                                      {
+                                                                                          source.Read(read =>
+                                                                                          {
+                                                                                              read.Action("GetCustomerContactPersonList", "Common").Data("filterContactPerson");
+                                                                                          }).ServerFiltering(true);
+                                                                                      }))
+                                        @*.Events(e => e.Change("onChangeContactPerson"))*@
+                                        @Html.ValidationMessageFor(m => m.CustomerContactPId)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Email, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().TextBoxFor(m => m.Email).HtmlAttributes(new { @tabindex = 5, @type = "email", @readonly = "readonly" })
+                                        @Html.ValidationMessageFor(m => m.Email)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.InquiryNo, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().TextBoxFor(m => m.InquiryNo).HtmlAttributes(new { @tabindex = 7 })
+                                        @Html.ValidationMessageFor(m => m.InquiryNo)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.PaymentTerms, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().TextBoxFor(m => m.PaymentTerms).HtmlAttributes(new { @tabindex = 9 })
+                                        @Html.ValidationMessageFor(m => m.PaymentTerms)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.ValidityDays, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().IntegerTextBoxFor(m => m.ValidityDays).HtmlAttributes(new { @tabindex = 13 }).Spinners(false).Min(0)
+                                        @Html.ValidationMessageFor(m => m.ValidityDays)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.ServiceEngineerId, new { @class = "col-sm-6 col-lg-4 control-label" })
+                                    <div class="col-sm-6 col-lg-9 controls">
+                                        @(Html.Kendo().ComboBoxFor(m => m.ServiceEngineerId)
+                                                         .Value(Model.ServiceEngineerId == 0 ? string.Empty : Model.ServiceEngineerId.ToString())
+                                                         .Placeholder("--Select --")
+                                                         .DataTextField("Name")
+                                                         .DataValueField("UserId")
+                                                         .HtmlAttributes(new { @tabindex = 1 })
+                                                         .DataSource(source =>
+                                                         {
+                                                             source.Read(read =>
+                                                             {
+                                                                 read.Action("GetServiceEngineerList", "Common");
+                                                             });
+                                                         })
+                                        )
+
+                                        @Html.ValidationMessageFor(m => m.ServiceEngineerId)
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="col-lg-6">
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.QuotationDate, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().DatePickerFor(m => m.QuotationDate).HtmlAttributes(new { @tabindex = 2, @readonly = "readonly" })
+                                        @Html.ValidationMessageFor(m => m.QuotationDate)
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.CustomerContactPContactNo, new { @class = "col-sm-6 col-lg-6 control-label" })
+                                    <div class="col-sm-6 col-lg-9 controls">
+                                        @Html.Kendo().TextBoxFor(m => m.CustomerContactPContactNo).HtmlAttributes(new { @tabindex = 4, @readonly = "readonly" })
+                                        @Html.ValidationMessageFor(m => m.CustomerContactPContactNo)
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.ReportServiceNo, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().TextBoxFor(m => m.ReportServiceNo).HtmlAttributes(new { @tabindex = "6" })
+                                        @Html.ValidationMessageFor(m => m.ReportServiceNo)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.InquiryDate, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().DatePickerFor(m => m.InquiryDate).HtmlAttributes(new { @tabindex = 8 })
+                                        @Html.ValidationMessageFor(m => m.InquiryDate)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.DeliveryWeeks, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().IntegerTextBoxFor(m => m.DeliveryWeeks).HtmlAttributes(new { @tabindex = 10 }).Spinners(false).Min(0)
+                                        @Html.ValidationMessageFor(m => m.DeliveryWeeks)
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Insurance, new { @class = "col-sm-6 col-lg-4 col-form-label" })
+                                    <div class="col-sm-6 col-lg-9">
+                                        @Html.Kendo().TextBoxFor(m => m.Insurance).HtmlAttributes(new { @tabindex = 12 })
+                                        @Html.ValidationMessageFor(m => m.Insurance)
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                if (Model.PerformaInvoiceId > 0)
+                {
+                    <div class="card">
+                        <div class="card-header header-elements-inline">
+                            <h5 class="card-title">Performa Invoice Details</h5>
+                        </div>
+                        <div class="card-body">
+
+                            @(Html.Kendo().Grid<tblPerformaInvoiceDetail>()
+                                     .Name("gridPIDetail")
+                                     .Columns(columns =>
+                                     {
+                                         columns.Command(command =>
+                                         {
+                                             command.Edit().Text(" ");
+                                             command.Destroy().Text(" ");
+                                         }).Title("Action").HtmlAttributes(WebHelper.ActionCenterColumnStyleWithCanEdit)
+                                                    .HeaderHtmlAttributes(WebHelper.ActionCenterColumnStyleWithCanEdit);
+
+                                         columns.Bound(d => d.MPQDetailId).Visible(false);
+                                         columns.ForeignKey(d => d.MachineTypeId, (IEnumerable)ViewBag.MachineTypeList, "MachineTypeId", "MachineTypeName");
+                                         columns.ForeignKey(d => d.MachineModelId, (IEnumerable)ViewBag.MachineModelList, "MachineModelId", "MachineName");
+                                         columns.Bound(d => d.MachineModelSerialNo).Width(100);
+                                         columns.ForeignKey(d => d.MachinePartsId, (IEnumerable)ViewBag.MachinePartList, "MachinePartId", "ProductValue");
+                                         columns.Bound(d => d.MachinePartDescription).Width(150); ;
+                                         columns.Bound(d => d.PartsHSNCode).Width(100).Title("HSN Code"); ;
+                                         columns.Bound(d => d.PartsQuantity).ClientFooterTemplate("Total Quantity: #=sum#").Width(70);
+                                         //columns.Bound(d => d.UnitPrice).Width(80);
+                                         columns.Bound(d => d.SellingPrice).Width(80).Title("Rate");
+                                         columns.Bound(d => d.DiscountPercentage).Width(70);
+                                         //columns.Bound(d => d.TaxablePrice).ClientFooterTemplate("<div> Total Taxable Price: #=sum# </div><div> Final Amount : #= calculateFianlA()#</div>").Width(70);
+                                         columns.Bound(d => d.TaxablePrice).ClientFooterTemplate("<div> Total Taxable Price: #=sum# </div>").Width(70);
+                                         columns.ForeignKey(d => d.GSTPercentage, (IEnumerable)ViewBag.GSTPercentageList, "Id", "Percentage").Width(70);
+                                         columns.Bound(d => d.GSTAmount).ClientFooterTemplate("Total GST Amount: #=sum#").Width(70);
+                                         columns.Bound(d => d.FinalAmount).ClientFooterTemplate("Total Amount: #=sum#").Width(70);
+                                     })
+                                     .ToolBar(toolbar =>
+                                     {
+                                         if (AuthorizationHelper.CanAdd(ViewContext.RouteData.Values["Controller"].ToString()))
+                                         {
+                                             toolbar.Create().Text("Add");
+                                         }
+                                     })
+                                     .Editable(editable =>
+                                     {
+                                         editable.Mode(GridEditMode.PopUp).TemplateName("tblPIDetail");
+                                         editable.DisplayDeleteConfirmation("Are you sure you want to delete this PI Detail?");
+                                         editable.Window(x => x.Title("Manage Performa Invoice Detail"));
+                                     })
+                                     //.Pageable(x =>
+                                     //{
+                                     //    x.Refresh(true);
+                                     //    x.PageSizes(WebHelper.PageSizes);
+                                     //})
+                                     .Sortable(sortable => sortable.AllowUnsort(false))
+                                     //.Filterable()
+                                     .PersistSelection()
+                                     .NoRecords()
+                                     .Scrollable(e => e.Enabled(true))
+                                     .Events(grid => grid.Edit("onEdit").Save("onSave").DataBound("onDataBound"))
+                                     .DataSource(dataSource => dataSource
+                                         .Ajax()
+                                         .Aggregates(aggregates =>
+                                         {
+                                             //aggregates.Add(p => p.PartsQuantity).Count();
+                                             aggregates.Add(p => p.PartsQuantity).Sum();
+                                             aggregates.Add(p => p.TaxablePrice).Sum();
+                                             aggregates.Add(p => p.GSTAmount).Sum();
+                                             aggregates.Add(p => p.FinalAmount).Sum();
+                                         })
+                                         .ServerOperation(true)
+                                         //.PageSize(WebHelper.PageSize)
+                                         .Model(model => model.Id(d => d.PIDetailId))
+                                         .Events(events => events.Error("onError(\"gridPIDetail\")").RequestEnd("onRequestEnd"))
+                                         .Create(update => update.Action("KendoSave", "PIDetail"))
+                                         .Read(read => read.Action("KendoRead", "PIDetail").Data("additionalData"))
+                                         .Update(update => update.Action("KendoSave", "PIDetail"))
+                                         .Destroy(update => update.Action("KendoDestroy", "PIDetail"))
+                                     ))
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.TotalFinalAmount, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                        <div class="col-sm-6 col-lg-12">
+                                            @(Html.Kendo().NumericTextBoxFor(m => m.TotalFinalAmount).Spinners(false)
+                                                                                                .HtmlAttributes(new { @readonly = "readonly" }))
+                                            @Html.ValidationMessageFor(m => m.TotalFinalAmount)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.FreightAmount, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                        <div class="col-sm-6 col-lg-12">
+                                            @(Html.Kendo().NumericTextBoxFor(m => m.FreightAmount).Spinners(false)
+                                                                                                .HtmlAttributes(new { @tabindex = 11 }).Events(e => e.Change("UpdateQuotationAmount")))
+                                            @Html.ValidationMessageFor(m => m.FreightAmount)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.FreightPercentage, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                        <div class="col-sm-6 col-lg-12">
+                                            @(Html.Kendo().NumericTextBoxFor(m => m.FreightPercentage).Spinners(false).Min(0)
+                                                                                                                                .HtmlAttributes(new { @tabindex = 12 }).Events(e => e.Change("UpdateQuotationAmount")))
+                                            @Html.ValidationMessageFor(m => m.FreightPercentage)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.TotalFreightAmount, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                        <div class="col-sm-6 col-lg-12">
+                                            @(Html.Kendo().NumericTextBoxFor(m => m.TotalFreightAmount).Spinners(false).Min(0)
+                                                                                  .HtmlAttributes(new { @tabindex = 11, @readonly = "readonly" }))
+                                            @Html.ValidationMessageFor(m => m.TotalFreightAmount)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.QuotationAmount, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                        <div class="col-sm-6 col-lg-12">
+                                            @(Html.Kendo().NumericTextBoxFor(m => m.QuotationAmount).Spinners(false)
+                                                                                                  .HtmlAttributes(new { @readonly = "readonly" }))
+                                            @Html.ValidationMessageFor(m => m.QuotationAmount)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Remarks, new { @class = "col-sm-6 col-lg-6 col-form-label" })
+                                        <div class="col-sm-6 col-lg-12">
+                                            @(Html.TextAreaFor(m => m.Remarks, new { @tabindex = 13, @class = "k-textbox" }))
+                                            @Html.ValidationMessageFor(m => m.Remarks)
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function filterContactPerson(e) {
+        return {
+            CustomerId: getKendComboboxValue('CustomerId')
+        };
+    }
+
+    function additionalData(e) {
+        return {
+            PerformaInvoiceId: getInputValueById('PerformaInvoiceId')
+        };
+    }
+
+    function onEdit(e) {
+        if (e.model.isNew()) {
+            var PerformaInvoiceId = getInputValueById('PerformaInvoiceId');
+            e.model.set("PerformaInvoiceId", PerformaInvoiceId);
+            e.model.set("MachineTypeId", '');
+            e.model.set("MachineModelId", '');
+            e.model.set("MachinePartsId", '');
+
+            var totalRows = $("#gridPIDetail").data("kendoGrid").dataSource.total();
+            if (totalRows > 1) {
+
+                var grid = $("#gridPIDetail").data("kendoGrid").dataSource;
+                var machineTypeId = grid._data[1].MachineTypeId;
+                var machineModelId = grid._data[1].MachineModelId;
+                var machineModelSerialNo = grid._data[1].MachineModelSerialNo;
+
+                e.container.find("[name=MachineTypeId]").val(machineTypeId).trigger("change");
+                e.model.set("MachineTypeId", machineTypeId);
+
+                e.container.find("[name=MachineModelId]").val(machineModelId).trigger("change");
+                e.model.set("MachineModelId", machineModelId);
+
+                e.container.find("[name=MachineModelSerialNo]").val(machineModelSerialNo).trigger("change");
+                e.model.set("MachineModelSerialNo", machineModelSerialNo);
+
+                e.container.find("td:eq(3) input").focus();
+            }
+        }
+    }
+
+    function onSave(e) {
+        e.model.set("MachinePartsQuotationId", getInputValueById('PerformaInvoiceId'));
+        e.model.set("TaxablePrice", getkendoNumericTextBoxValue('TaxablePrice'));
+        e.model.set("GSTAmount", getkendoNumericTextBoxValue('GSTAmount'));
+        e.model.set("MachinePartDescription", getInputValueById('MachinePartDescription'));
+        e.model.set("PartsHSNCode", getInputValueById('PartsHSNCode'));
+        e.model.set("UnitPrice", getInputValueById('UnitPrice'));
+        e.model.set("SellingPrice", getInputValueById('SellingPrice'));
+        e.model.set("TotalPrice", getInputValueById('TotalPrice'));
+        e.model.set("FinalAmount", getInputValueById('FinalAmount'));
+    }
+
+    function onDataBound(e) {
+        var grid = $("#gridPIDetail").data("kendoGrid");
+        for (var i = 0; i < grid.columns.length; i++) {
+            grid.autoFitColumn(i);
+        }
+
+        var finalAmount = 0;
+        var gridData = grid.dataSource.view();
+        for (var i = 0; i < gridData.length; i++) {
+            var currentUid = gridData[i].uid;
+            if (gridData[i].FinalAmount > 0) {
+                finalAmount = finalAmount + gridData[i].FinalAmount;
+            }
+        }
+        setkendoNumericTextBoxValue('TotalFinalAmount', finalAmount);
+        var freightAmount = getkendoNumericTextBoxValue('FreightAmount');
+        var freightPer = getkendoNumericTextBoxValue('FreightPercentage');
+        var freightAmount2 = 0;
+        if (freightPer > 0) {
+            freightAmount2 = (freightAmount * freightPer) / 100;
+        }
+        var totalFreightamount = freightAmount + freightAmount2;
+
+        setkendoNumericTextBoxValue('QuotationAmount', finalAmount + totalFreightamount);
+    }
+
+    function onRequestEnd(e) {
+        if (e.response.Errors === null) {
+            var type = e.type;
+            if (type === "update" || type === "create" || type == "destroy") {
+                readKendoGrid('gridPIDetail');
+            }
+        }
+    }
+
+    function UpdateQuotationAmount(e) {
+        var totalamount = getkendoNumericTextBoxValue('TotalFinalAmount');
+        var freightAmount = getkendoNumericTextBoxValue('FreightAmount');
+        var freightPer = getkendoNumericTextBoxValue('FreightPercentage');
+        var freightAmount2 = 0;
+        if (freightPer > 0) {
+            freightAmount2 = (freightAmount * freightPer) / 100;
+        }
+        var totalFreightamount = freightAmount + freightAmount2;
+        setkendoNumericTextBoxValue('TotalFreightAmount', totalFreightamount)
+        setkendoNumericTextBoxValue('QuotationAmount', totalamount + totalFreightamount);
+    }
+
+    function calculateFianlA() {
+        var grid = $("#gridPIDetail").data("kendoGrid").dataSource;
+        var aggregates = grid.aggregates();
+        var finalAmount = aggregates.FinalAmount.sum;
+        //var finalAmount = aggregates.TaxablePrice.sum + aggregates.GSTAmount.sum;
+        return finalAmount;
+    }
+
+
+    // function related to partial template
+
+    function filterMachine(e) {
+        return {
+            MachineTypeId: getKendComboboxValue('MachineTypeId')
+        };
+    }
+
+    function onChangeMPart(e) {
+        var dataItemMachinePart = $('#MachinePartsId').data("kendoComboBox");
+        if (dataItemMachinePart != undefined) {
+            var dataItem = dataItemMachinePart.dataItem(dataItemMachinePart.select());
+            if (dataItem != undefined) {
+                setInputValueById('MachinePartDescription', dataItem.Description);
+                setInputValueById('PartsHSNCode', dataItem.HSNCode);
+                setInputValueById('UnitPrice', dataItem.IPL);
+                $("#UnitPrice").data("kendoNumericTextBox").trigger("change");
+            }
+        }
+    }
+
+    function ChangeTotalPrice() {
+        var quantity = getkendoNumericTextBoxValue('PartsQuantity');
+        var unitPrice = getkendoNumericTextBoxValue('UnitPrice');
+        var totalPrice = quantity * unitPrice;
+        setkendoNumericTextBoxValue('TotalPrice', totalPrice);
+        ChangeTaxablePrice();
+    }
+
+
+    function ChangeTaxablePrice() {
+        var totalPrice = getkendoNumericTextBoxValue('TotalPrice');
+
+        var PAndFPer = getkendoNumericTextBoxValue('PAndFPercentage');
+        var PMPer = getkendoNumericTextBoxValue('ProfitMarginPercentage');
+        var discountPer = getkendoNumericTextBoxValue('DiscountPercentage');
+
+        var discountAmount = 0;
+        var PAndFPerAmount = 0;
+        var PMPerAmount = 0;
+        var finalPrice;
+        var sellingPrice;
+
+        if (totalPrice != 0) {
+
+            if (PAndFPer != 0) {
+                PAndFPerAmount = (totalPrice * PAndFPer) / 100;
+            }
+
+            if (PMPer != 0) {
+                PMPerAmount = ((totalPrice + PAndFPerAmount) * PMPer) / 100;
+            }
+
+            if (discountPer != 0) {
+                discountAmount = ((totalPrice + PAndFPerAmount + PMPerAmount) * discountPer) / 100;
+            }
+
+            sellingPrice = (totalPrice + PAndFPerAmount + PMPerAmount);
+            finalPrice = (totalPrice + PAndFPerAmount + PMPerAmount) - discountAmount;
+
+            setkendoNumericTextBoxValue('SellingPrice', sellingPrice);
+            setkendoNumericTextBoxValue('TaxablePrice', finalPrice)
+            setKendComboboxValue('GSTPercentage', '');
+            setkendoNumericTextBoxValue('GSTAmount', 0);
+            setkendoNumericTextBoxValue('FinalAmount', 0);
+        }
+    }
+
+    function onChangeGST(e) {
+        var gst = getKendComboboxText('GSTPercentage');
+        var taxableAmount = getkendoNumericTextBoxValue('TaxablePrice');
+        if (gst != 0) {
+            var taxablePrice = getkendoNumericTextBoxValue('TaxablePrice');
+            var gstAmount = (taxablePrice * gst) / 100;
+            setkendoNumericTextBoxValue('GSTAmount', gstAmount);
+
+            var finalAmount = taxableAmount + gstAmount;
+            setkendoNumericTextBoxValue('FinalAmount', finalAmount);
+        }
+        else {
+            setkendoNumericTextBoxValue('GSTAmount', 0);
+            setkendoNumericTextBoxValue('FinalAmount', taxableAmount);
+        }
+    }
+
+</script>
+
